@@ -5,6 +5,7 @@ import AjudaAtalhos from './AjudaAtalhos';
 import { useTema } from '../contexts/TemaContext';
 import { useLingua } from '../contexts/LinguaContext';
 import { useAviso } from '../contexts/AvisoContext';
+import { usePosts } from '../contexts/PostsContext';
 import { useAtalhos } from '../hooks/useAtalhos';
 
 export default function Layout() {
@@ -13,6 +14,7 @@ export default function Layout() {
   const { alternarTema } = useTema();
   const { lingua, alternarLingua, t } = useLingua();
   const avisar = useAviso();
+  const { posts } = usePosts();
   const linguaAnterior = useRef(lingua);
   const buscaRef = useRef(null);
   const ajudaRef = useRef(null);
@@ -33,6 +35,20 @@ export default function Layout() {
     l: () => alternarLingua(),
     '?': () => ajudaRef.current?.showModal(),
   });
+
+  // Título da aba do navegador acompanha a página (ajuda quem usa leitor de
+  // tela, o histórico e as abas abertas).
+  useEffect(() => {
+    const caminho = location.pathname;
+    const id = Number(caminho.match(/^\/estrela\/(\d+)/)?.[1]);
+    let pagina = null;
+    if (caminho === '/') pagina = t('ceu.titulo');
+    else if (caminho === '/catalogo') pagina = t('catalogo.titulo');
+    else if (caminho === '/observatorio') pagina = t('obs.titulo');
+    else if (caminho === '/nova') pagina = t('nova.titulo');
+    else if (id) pagina = posts?.find((p) => p.id === id)?.titulo || null;
+    document.title = pagina ? `${pagina} · Órbita` : 'Órbita';
+  }, [location.pathname, posts, t]);
 
   // Avisa (também para leitor de tela) quando o idioma muda.
   useEffect(() => {

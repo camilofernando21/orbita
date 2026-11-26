@@ -6,6 +6,9 @@ A Órbita é uma aplicação web de página única (SPA) feita em React que tran
 
 Projeto da Avaliação Bimestral (2º bimestre), desenvolvido em dupla.
 
+**Site publicado:** https://orbita-phi-jade.vercel.app
+**Repositório:** https://github.com/camilofernando21/orbita
+
 ## Objetivo
 
 Consumir o recurso **Publicações (posts)** da API DummyJSON e apresentar os dados de um jeito que vá além de uma lista: a interface organiza as informações visualmente e deixa o usuário interagir com elas. A identidade visual nasceu do próprio recurso: publicações são coisas que "brilham" mais ou menos conforme o público reage a elas.

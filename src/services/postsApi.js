@@ -14,7 +14,8 @@ async function requisitar(caminho, { method = 'GET', corpo, signal } = {}) {
   const resposta = await fetch(BASE_URL + caminho, opcoes);
 
   if (!resposta.ok) {
-    const erro = new Error(`A API respondeu com o código ${resposta.status}.`);
+    // Texto neutro (serve para português e inglês): o idioma da tela explica o resto.
+    const erro = new Error(`HTTP ${resposta.status}`);
     erro.status = resposta.status;
     throw erro;
   }
