@@ -1,5 +1,6 @@
 import { useId } from 'react';
 import { aleatorio, matizTag } from '../utils/ceu';
+import { useLingua } from '../contexts/LinguaContext';
 
 // Arte gerada por código para cada publicação. A semente vem do id do post,
 // então cada post tem a sua nebulosa e ela é sempre a mesma.
@@ -19,6 +20,7 @@ const TAMANHOS = { hero: [1200, 520], cartao: [400, 225], previa: [400, 300] };
 
 export default function Nebulosa({ post, modo, variante = 'hero', satelites = 0, semente }) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
+  const { t } = useLingua();
   const r = aleatorio(semente ?? post.id * 131 + 7);
   const [W, H] = TAMANHOS[variante] || TAMANHOS.hero;
   const grande = variante === 'hero';
@@ -58,7 +60,7 @@ export default function Nebulosa({ post, modo, variante = 'hero', satelites = 0,
       viewBox={`0 0 ${W} ${H}`}
       preserveAspectRatio="xMidYMid slice"
       role="img"
-      aria-label={`Nebulosa gerada a partir da publicação "${post.title}"`}
+      aria-label={t('nebulosa.rotulo', { titulo: post.titulo || post.title })}
     >
       <defs>
         {nuvens.map((n, i) => (

@@ -5,13 +5,14 @@ import { Carregando, EstadoErro, EstadoVazio } from '../components/Estados';
 import { usePosts } from '../contexts/PostsContext';
 import { useTema } from '../contexts/TemaContext';
 import { useFiltroCeu } from '../hooks/useFiltroCeu';
-import { contarConstelacoes, nomeTag, polemica } from '../utils/ceu';
+import { contarConstelacoes, polemica } from '../utils/ceu';
+import { useLingua } from '../contexts/LinguaContext';
 
 const ORDENS = {
-  vistas: { rotulo: 'Mais vistas', fn: (a, b) => b.views - a.views },
-  curtidas: { rotulo: 'Mais curtidas', fn: (a, b) => (b.reactions?.likes || 0) - (a.reactions?.likes || 0) },
-  polemicas: { rotulo: 'Mais polêmicas', fn: (a, b) => polemica(b) - polemica(a) },
-  titulo: { rotulo: 'Título (A a Z)', fn: (a, b) => a.title.localeCompare(b.title) },
+  vistas: { rotulo: 'catalogo.vistas', fn: (a, b) => b.views - a.views },
+  curtidas: { rotulo: 'catalogo.curtidas', fn: (a, b) => (b.reactions?.likes || 0) - (a.reactions?.likes || 0) },
+  polemicas: { rotulo: 'catalogo.polemicas', fn: (a, b) => polemica(b) - polemica(a) },
+  titulo: { rotulo: 'catalogo.tituloAZ', fn: (a, b) => a.titulo.localeCompare(b.titulo) },
 };
 const POR_PAGINA = 24;
 
@@ -20,6 +21,7 @@ const POR_PAGINA = 24;
 export default function Catalogo() {
   const { posts, status, erro, recarregar } = usePosts();
   const { modo } = useTema();
+  const { t, nomeTag } = useLingua();
   const filtro = useFiltroCeu();
   const [ordem, setOrdem] = useState('vistas');
   const [quantidade, setQuantidade] = useState(POR_PAGINA);
@@ -30,40 +32,38 @@ export default function Catalogo() {
     return [...base].sort(ORDENS[ordem].fn);
   }, [posts, filtro.visiveis, ordem]);
 
-  if (status === 'carregando') return <Carregando texto="Montando o catálogo…" />;
+  if (status === 'carregando') return <Carregando texto={t('catalogo.carregando')} />;
   if (status === 'erro') return <EstadoErro detalhe={erro?.message} aoTentar={recarregar} />;
 
   return (
     <div className="pagina pagina-catalogo">
       <header className="pagina-cabeca">
-        <p className="sobretitulo">Catálogo de estrelas</p>
-        <h1>Todas as publicações, uma a uma</h1>
-        <p className="pagina-intro">
-          O mesmo céu em forma de lista. A busca do telescópio e o filtro de constelação valem aqui também.
-        </p>
+        <p className="sobretitulo">{t('catalogo.sobre')}</p>
+        <h1>{t('catalogo.titulo')}</h1>
+        <p className="pagina-intro">{t('catalogo.intro')}</p>
       </header>
 
       <div className="barra-filtros">
         <Legenda constelacoes={constelacoes} ativa={filtro.constelacao} aoEscolher={filtro.definirConstelacao} modo={modo} className="legenda-quebra" />
         <div className="ordenar">
-          <label htmlFor="ordem">Ordenar por</label>
+          <label htmlFor="ordem">{t('catalogo.ordenar')}</label>
           <select id="ordem" value={ordem} onChange={(e) => setOrdem(e.target.value)}>
             {Object.entries(ORDENS).map(([chave, o]) => (
-              <option key={chave} value={chave}>{o.rotulo}</option>
+              <option key={chave} value={chave}>{t(o.rotulo)}</option>
             ))}
           </select>
         </div>
       </div>
 
       <p className="contagem-resultados" role="status" aria-live="polite">
-        {filtro.buscando ? 'Buscando…' : `${lista.length} ${lista.length === 1 ? 'publicação' : 'publicações'}`}
-        {filtro.q && ` para “${filtro.q}”`}
-        {filtro.constelacao && ` em ${nomeTag(filtro.constelacao)}`}
+        {filtro.buscando ? t('catalogo.buscando') : t('catalogo.contagem', { n: lista.length })}
+        {filtro.q && t('catalogo.para', { q: filtro.q })}
+        {filtro.constelacao && t('catalogo.em', { nome: nomeTag(filtro.constelacao) })}
       </p>
 
       {lista.length === 0 ? (
-        <EstadoVazio titulo="Céu limpo" texto="Nenhuma estrela combina com a busca ou com o filtro escolhido.">
-          <button type="button" className="botao botao-primario" onClick={filtro.limpar}>Limpar filtros</button>
+        <EstadoVazio titulo={t('catalogo.vazioTitulo')} texto={t('catalogo.vazioTexto')}>
+          <button type="button" className="botao botao-primario" onClick={filtro.limpar}>{t('catalogo.limpar')}</button>
         </EstadoVazio>
       ) : (
         <>
@@ -77,7 +77,7 @@ export default function Catalogo() {
           {quantidade < lista.length && (
             <div className="mais">
               <button type="button" className="botao botao-grande" onClick={() => setQuantidade((q) => q + POR_PAGINA)}>
-                Mostrar mais {Math.min(POR_PAGINA, lista.length - quantidade)} de {lista.length - quantidade}
+                {t('catalogo.mais', { n: Math.min(POR_PAGINA, lista.length - quantidade), resto: lista.length - quantidade })}
               </button>
             </div>
           )}

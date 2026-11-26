@@ -12,7 +12,8 @@ import { useAviso } from '../contexts/AvisoContext';
 import { useAtalhos } from '../hooks/useAtalhos';
 import { useVoz } from '../hooks/useVoz';
 import { excluirPost, listarComentarios } from '../services/postsApi';
-import { corTag, formatar, minutosLeitura, nomeTag } from '../utils/ceu';
+import { corTag, minutosLeitura } from '../utils/ceu';
+import { useLingua } from '../contexts/LinguaContext';
 
 const reduzirMovimento = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -20,6 +21,7 @@ export default function DetalheEstrela() {
   const { id } = useParams();
   const { posts, status, erro, recarregar, buscarPorId, remover } = usePosts();
   const { modo } = useTema();
+  const { t, nomeTag, formatar, comentario, lingua } = useLingua();
   const avisar = useAviso();
   const navigate = useNavigate();
   const voz = useVoz();
@@ -63,12 +65,12 @@ export default function DetalheEstrela() {
     e: () => post && navigate(`/estrela/${post.id}/editar`, { viewTransition: true }),
   });
 
-  if (status === 'carregando') return <Carregando texto="Aproximando a estrela…" />;
+  if (status === 'carregando') return <Carregando texto={t('detalhe.carregando')} />;
   if (status === 'erro') return <EstadoErro detalhe={erro?.message} aoTentar={recarregar} />;
   if (!post) {
     return (
-      <EstadoVazio titulo="Estrela não encontrada" texto="Ela pode ter sido apagada ou o endereço está errado.">
-        <Link to="/" className="botao botao-primario">Voltar ao céu</Link>
+      <EstadoVazio titulo={t('detalhe.naoEncontrada')} texto={t('detalhe.naoEncontradaTexto')}>
+        <Link to="/" className="botao botao-primario">{t('estado.voltar')}</Link>
       </EstadoVazio>
     );
   }
@@ -95,14 +97,12 @@ export default function DetalheEstrela() {
     setErroApagar(null);
     try {
       const resposta = await excluirPost(post.id);
-      finalizarExclusao(
-        `A estrela virou supernova. DELETE /posts/${post.id} respondeu isDeleted: ${String(resposta.isDeleted)} (simulado, ela some só nesta sessão).`,
-      );
+      finalizarExclusao(t('detalhe.avisoApagou', { id: post.id, ok: String(resposta.isDeleted) }));
     } catch (falha) {
       if (falha.status === 404 && post.local) {
-        finalizarExclusao('A estrela foi apagada. Ela tinha sido criada aqui, então a API não a conhecia e a exclusão aconteceu só no navegador.');
+        finalizarExclusao(t('detalhe.avisoApagouLocal'));
       } else {
-        setErroApagar(`Não foi possível apagar: ${falha.message}`);
+        setErroApagar(t('detalhe.erroApagar', { msg: falha.message }));
         setApagando(false);
       }
     }
@@ -110,48 +110,49 @@ export default function DetalheEstrela() {
 
   return (
     <article className={`pagina detalhe${colapsando ? ' colapsando' : ''}`} style={{ '--cor': corTag(tag, modo) }}>
-      <nav className="trilha" aria-label="Você está em">
+      <nav className="trilha" aria-label={t('detalhe.trilha')}>
         <button type="button" className="botao-link" onClick={voltar}>
-          <Icone nome="voltar" tamanho={18} /> Voltar ao céu
+          <Icone nome="voltar" tamanho={18} /> {t('detalhe.voltar')}
         </button>
         <span aria-hidden="true">/</span>
-        <Link to={`/?constelacao=${tag}`}>Constelação {nomeTag(tag)}</Link>
+        <Link to={`/?constelacao=${tag}`}>{t('detalhe.constelacao', { nome: nomeTag(tag) })}</Link>
       </nav>
 
       <div className="detalhe-arte">
         <Nebulosa post={post} modo={modo} variante="hero" satelites={comentarios.lista.length} />
         <span className="detalhe-arte-legenda">
-          Nebulosa nº {post.id}<span className="so-desktop"> · gerada a partir dos dados da publicação</span>
+          {t('detalhe.nebulosa', { id: post.id })}<span className="so-desktop">{t('detalhe.nebulosaExtra')}</span>
         </span>
       </div>
 
       <header className="detalhe-cabeca">
-        <ul className="detalhe-tags" aria-label="Tags">
+        <ul className="detalhe-tags" aria-label={t('detalhe.tags')}>
           {post.tags.map((t) => (
             <li key={t} style={{ '--cor': corTag(t, modo) }}><span className="ponto" aria-hidden="true" />{nomeTag(t)}</li>
           ))}
         </ul>
-        <h1>{post.title}</h1>
+        <h1 lang={post.idioma}>{post.titulo}</h1>
         <p className="detalhe-meta">
-          {formatar(post.views)} visualizações · Leitura de {minutosLeitura(post)} min · Autor nº {post.userId}
-          {post.local && <span className="selo">Criada nesta sessão</span>}
-          {post.editado && <span className="selo">Editada</span>}
+          {t('detalhe.meta', { views: formatar(post.views), min: minutosLeitura(post), autor: post.userId })}
+          {post.local && <span className="selo">{t('detalhe.criada')}</span>}
+          {post.editado && <span className="selo">{t('detalhe.editada')}</span>}
         </p>
       </header>
 
       <div className="detalhe-grade">
         <div className="detalhe-principal">
-          <p className="detalhe-corpo" lang="en">{post.body}</p>
+          <p className="detalhe-corpo" lang={post.idioma}>{post.texto}</p>
+          {post.semTraducao && <p className="aviso-traducao">{t('detalhe.semTraducao')}</p>}
 
           <div className="detalhe-acoes">
             {voz.suportado && (
-              <button type="button" className="botao" onClick={() => (voz.falando ? voz.parar() : voz.falar(`${post.title}. ${post.body}`))} aria-pressed={voz.falando}>
+              <button type="button" className="botao" onClick={() => (voz.falando ? voz.parar() : voz.falar(`${post.titulo}. ${post.texto}`, post.idioma || (lingua === 'pt' ? 'pt-BR' : 'en-US')))} aria-pressed={voz.falando}>
                 <Icone nome={voz.falando ? 'parar' : 'ouvir'} tamanho={18} />
-                {voz.falando ? 'Parar leitura' : 'Ouvir'}
+                {voz.falando ? t('detalhe.parar') : t('detalhe.ouvir')}
               </button>
             )}
             <Link to={`/estrela/${post.id}/editar`} className="botao" viewTransition>
-              <Icone nome="editar" tamanho={18} /> Editar <kbd>E</kbd>
+              <Icone nome="editar" tamanho={18} /> {t('detalhe.editar')} <kbd>E</kbd>
             </Link>
             <button
               type="button"
@@ -161,31 +162,31 @@ export default function DetalheEstrela() {
                 modal.current?.showModal();
               }}
             >
-              <Icone nome="apagar" tamanho={18} /> Apagar
+              <Icone nome="apagar" tamanho={18} /> {t('detalhe.apagar')}
             </button>
           </div>
 
           <section className="comentarios" aria-labelledby="titulo-comentarios">
             <h2 id="titulo-comentarios">
-              Satélites <span className="contagem">{comentarios.estado === 'ok' ? comentarios.lista.length : ''}</span>
+              {t('detalhe.satelites')} <span className="contagem">{comentarios.estado === 'ok' ? comentarios.lista.length : ''}</span>
             </h2>
-            <p className="secao-explica">Cada comentário vira um satélite orbitando a nebulosa lá em cima.</p>
+            <p className="secao-explica">{t('detalhe.satelitesExplica')}</p>
 
             {comentarios.estado === 'carregando' && (
-              <ul className="lista-comentarios" aria-busy="true" aria-label="Carregando comentários">
+              <ul className="lista-comentarios" aria-busy="true" aria-label={t('detalhe.carregandoComentarios')}>
                 {[0, 1].map((i) => <li key={i} className="esqueleto" />)}
               </ul>
             )}
             {comentarios.estado === 'erro' && (
               <div className="alerta-erro" role="alert">
-                Não foi possível carregar os comentários.{' '}
+                {t('detalhe.erroComentarios')}{' '}
                 <button type="button" className="botao-link" onClick={() => setComentarios((c) => ({ ...c, tentativa: c.tentativa + 1 }))}>
-                  Tentar de novo
+                  {t('estado.tentar')}
                 </button>
               </div>
             )}
             {comentarios.estado === 'ok' && comentarios.lista.length === 0 && (
-              <p className="sem-itens">{post.local ? 'Estrelas criadas aqui ainda não têm satélites: a API não guarda posts novos.' : 'Nenhum satélite por enquanto.'}</p>
+              <p className="sem-itens">{post.local ? t('detalhe.semComentariosLocal') : t('detalhe.semComentarios')}</p>
             )}
             {comentarios.estado === 'ok' && comentarios.lista.length > 0 && (
               <ul className="lista-comentarios">
@@ -196,8 +197,8 @@ export default function DetalheEstrela() {
                       <p className="comentario-autor">
                         <strong>{c.user?.fullName || c.user?.username}</strong> <span>@{c.user?.username}</span>
                       </p>
-                      <p lang="en">{c.body}</p>
-                      <p className="comentario-likes">{formatar(c.likes)} curtidas</p>
+                      <p lang={lingua === 'pt' && comentario(c.body) !== c.body ? 'pt-BR' : 'en'}>{comentario(c.body)}</p>
+                      <p className="comentario-likes">{t('detalhe.curtidas', { n: formatar(c.likes) })}</p>
                     </div>
                   </li>
                 ))}
@@ -213,7 +214,7 @@ export default function DetalheEstrela() {
 
       {vizinhas.length > 0 && (
         <section className="vizinhas" aria-labelledby="titulo-vizinhas">
-          <h2 id="titulo-vizinhas">Na mesma constelação</h2>
+          <h2 id="titulo-vizinhas">{t('detalhe.vizinhas')}</h2>
           <ul className="grade-cartoes grade-tres">
             {vizinhas.map((p) => (
               <li key={p.id}><PostCard post={p} modo={modo} nivel={3} /></li>
@@ -224,16 +225,14 @@ export default function DetalheEstrela() {
 
       <ModalConfirmacao
         ref={modal}
-        titulo="Apagar esta estrela?"
-        textoConfirmar="Apagar estrela"
-        textoOcupado="Apagando…"
+        titulo={t('detalhe.modalTitulo')}
+        textoConfirmar={t('detalhe.modalConfirmar')}
+        textoOcupado={t('detalhe.modalOcupado')}
         aoConfirmar={confirmarExclusao}
         ocupado={apagando}
         erro={erroApagar}
       >
-        <p className="modal-texto">
-          “{post.title}” vai colapsar numa supernova. A API do DummyJSON só simula a exclusão: ela responde como se tivesse apagado, mas nada sai do servidor.
-        </p>
+        <p className="modal-texto">{t('detalhe.modalTexto', { titulo: post.titulo })}</p>
       </ModalConfirmacao>
     </article>
   );

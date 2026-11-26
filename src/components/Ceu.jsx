@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { aleatorio, caixa, corTag, ehPolemica, formatar, nomeTag, proximaNaDirecao } from '../utils/ceu';
+import { aleatorio, caixa, corTag, ehPolemica, proximaNaDirecao } from '../utils/ceu';
+import { useLingua } from '../contexts/LinguaContext';
 
 const reduzirMovimento = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -17,6 +18,7 @@ let introJaTocou = false; // a animação de abertura toca uma vez por visita
 
 export default function Ceu({ ceu, visiveis, modo, nasceu, focar, aoAbrir }) {
   const { estrelas, constelacoes, W, H } = ceu;
+  const { t, nomeTag, formatar } = useLingua();
 
   const svgRef = useRef(null);
   const camadasRef = useRef([]);
@@ -361,7 +363,7 @@ export default function Ceu({ ceu, visiveis, modo, nasceu, focar, aoAbrir }) {
         const brilho = Math.min(1, (p.reactions?.likes || 0) / maxLikes);
         const a = (e.r * 2).toFixed(1);
         const classes = ['estrela', pol && 'polemica', apagada && 'apagada', nascendo === e.id && 'nasce'].filter(Boolean).join(' ');
-        const rotulo = `${p.title}. Constelação ${nomeTag(e.tag)}. ${formatar(p.views)} visualizações, ${formatar(p.reactions?.likes)} curtidas${pol ? '. Polêmica' : ''}.`;
+        const rotulo = t('ceu.estrelaRotulo', { titulo: p.titulo, constelacao: nomeTag(e.tag), views: formatar(p.views), likes: formatar(p.reactions?.likes), polemica: pol });
         return (
           <g
             key={e.id}
@@ -371,7 +373,7 @@ export default function Ceu({ ceu, visiveis, modo, nasceu, focar, aoAbrir }) {
             transform={`translate(${e.x.toFixed(1)} ${e.y.toFixed(1)})`}
             tabIndex={apagada ? -1 : 0}
             role="button"
-            aria-roledescription="estrela"
+            aria-roledescription={t('ceu.estrela')}
             aria-label={rotulo}
             style={{ color: corTag(e.tag, modo), '--d': `${i * 5}ms` }}
             onClick={() => {
@@ -400,7 +402,7 @@ export default function Ceu({ ceu, visiveis, modo, nasceu, focar, aoAbrir }) {
           </g>
         );
       }),
-    [estrelas, visiveis, modo, nascendo, maxLikes, garantirVisivel],
+    [estrelas, visiveis, modo, nascendo, maxLikes, garantirVisivel, t, nomeTag, formatar],
   );
 
   const dica = dicaId && porId.get(dicaId);
@@ -411,7 +413,7 @@ export default function Ceu({ ceu, visiveis, modo, nasceu, focar, aoAbrir }) {
         ref={svgRef}
         className={`ceu-svg${intro ? ' intro' : ''}`}
         role="group"
-        aria-label="Céu de publicações. Use as setas para ir de estrela em estrela, Enter para abrir, mais e menos para zoom."
+        aria-label={t('ceu.rotulo')}
         preserveAspectRatio="xMidYMid meet"
         onPointerDown={aoPressionar}
       >
@@ -457,14 +459,14 @@ export default function Ceu({ ceu, visiveis, modo, nasceu, focar, aoAbrir }) {
         <g className="ceu-estrelas">{desenhoEstrelas}</g>
       </svg>
 
-      <div className="ceu-zoom" role="group" aria-label="Zoom do céu">
-        <button type="button" className="botao-icone" onClick={() => zoom(0.6)} aria-label="Aproximar (tecla +)" title="Aproximar (+)">
+      <div className="ceu-zoom" role="group" aria-label={t('ceu.zoom')}>
+        <button type="button" className="botao-icone" onClick={() => zoom(0.6)} aria-label={t('ceu.aproximar')} title={t('ceu.aproximar')}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
         </button>
-        <button type="button" className="botao-icone" onClick={() => zoom(1 / 0.6)} aria-label="Afastar (tecla -)" title="Afastar (-)">
+        <button type="button" className="botao-icone" onClick={() => zoom(1 / 0.6)} aria-label={t('ceu.afastar')} title={t('ceu.afastar')}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" /></svg>
         </button>
-        <button type="button" className="botao-icone" onClick={() => visaoGeral()} aria-label="Ver o céu inteiro (tecla 0)" title="Céu inteiro (0)">
+        <button type="button" className="botao-icone" onClick={() => visaoGeral()} aria-label={t('ceu.inteiro')} title={t('ceu.inteiro')}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7" /><circle cx="12" cy="12" r="1.5" /></svg>
         </button>
       </div>
@@ -472,11 +474,11 @@ export default function Ceu({ ceu, visiveis, modo, nasceu, focar, aoAbrir }) {
       <div ref={dicaRef} className="dica" hidden={!dica} data-alvo={dica ? dica.id : ''} aria-hidden="true">
         {dica && (
           <>
-            <strong>{dica.post.title}</strong>
+            <strong lang={dica.post.idioma}>{dica.post.titulo}</strong>
             <span>
-              {nomeTag(dica.tag)} · {formatar(dica.post.views)} visualizações
+              {nomeTag(dica.tag)} · {formatar(dica.post.views)} {t('ceu.visualizacoes')}
             </span>
-            <span className="dica-tecla">Enter ou clique para abrir</span>
+            <span className="dica-tecla">{t('ceu.dicaAbrir')}</span>
           </>
         )}
       </div>

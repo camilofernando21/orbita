@@ -1,11 +1,13 @@
 import { Link } from 'react-router';
-import { corTag, ehPolemica, formatar, nomeTag } from '../utils/ceu';
+import { corTag, ehPolemica } from '../utils/ceu';
+import { useLingua } from '../contexts/LinguaContext';
 import Nebulosa from './Nebulosa';
 
 // Cartão reutilizado no catálogo, no observatório e em "na mesma constelação".
 // O cartão inteiro é clicável, mas o link de verdade é só o título
 // (melhor para leitores de tela e para navegar com Tab).
 export default function PostCard({ post, modo, nivel = 3 }) {
+  const { t, nomeTag, formatar } = useLingua();
   const Titulo = `h${nivel}`;
   const tag = post.constelacao || 'diversas';
 
@@ -19,16 +21,16 @@ export default function PostCard({ post, modo, nivel = 3 }) {
           <span className="ponto" aria-hidden="true" />
           {nomeTag(tag)}
         </p>
-        <Titulo className="cartao-titulo">
+        <Titulo className="cartao-titulo" lang={post.idioma}>
           <Link to={`/estrela/${post.id}`} className="link-esticado" viewTransition>
-            {post.title}
+            {post.titulo}
           </Link>
         </Titulo>
-        <p className="cartao-resumo">{post.body}</p>
+        <p className="cartao-resumo" lang={post.idioma}>{post.texto}</p>
         <p className="cartao-meta">
-          <span>{formatar(post.views)} visualizações</span>
-          <span>{formatar(post.reactions?.likes)} curtidas</span>
-          {ehPolemica(post) && <span className="selo-polemica">Polêmica</span>}
+          <span>{formatar(post.views)} {t('cartao.visualizacoes')}</span>
+          <span>{formatar(post.reactions?.likes)} {t('cartao.curtidas')}</span>
+          {ehPolemica(post) && <span className="selo-polemica">{t('cartao.polemica')}</span>}
         </p>
       </div>
     </article>

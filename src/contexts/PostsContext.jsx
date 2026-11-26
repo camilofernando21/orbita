@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { listarPosts } from '../services/postsApi';
 import { atribuirConstelacoes } from '../utils/ceu';
+import { useLingua } from './LinguaContext';
 
 // Guarda a lista de posts para todas as páginas. Como a API não salva
 // nada de verdade (POST, PUT e DELETE são simulados), é aqui que as
@@ -32,8 +33,14 @@ export function PostsProvider({ children }) {
     return () => controle.abort();
   }, [tentativa]);
 
-  // Cada post ganha o campo "constelacao", calculado a partir das tags.
-  const postsComConstelacao = useMemo(() => atribuirConstelacoes(posts), [posts]);
+  const { conteudo } = useLingua();
+
+  // Cada post ganha o campo "constelacao" (calculado a partir das tags) e os
+  // campos "titulo" e "texto", já no idioma escolhido.
+  const postsComConstelacao = useMemo(
+    () => atribuirConstelacoes(posts).map((p) => ({ ...p, ...conteudo(p) })),
+    [posts, conteudo],
+  );
 
   const valor = useMemo(
     () => ({

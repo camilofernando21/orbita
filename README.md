@@ -41,6 +41,7 @@ Consumir o recurso **Publicações (posts)** da API DummyJSON e apresentar os da
 - **Editar (PUT)** e **apagar (DELETE)**, com confirmação. A exclusão vira uma supernova.
 - **Catálogo:** o mesmo conteúdo em cartões, com busca, filtro e ordenação.
 - **Observatório:** números gerais e rankings (mais vistas, mais polêmicas, mais curtidas, tamanho das constelações).
+- **Português e inglês:** seletor PT | EN no cabeçalho (atalho L). Troca a interface inteira e o conteúdo: em português, posts, comentários e tags aparecem traduzidos; em inglês, aparece o texto original da API. A escolha fica salva no navegador.
 - **Tema claro e escuro:** céu noturno e carta celeste (mapa antigo em papel). A troca acontece com uma animação circular a partir do botão e a escolha fica salva no navegador.
 
 ## Recursos e endpoints utilizados
@@ -86,7 +87,9 @@ Para gerar a versão de produção: `npm run build` e, para testar essa versão,
 ```
 src/
 ├── components/   componentes reutilizáveis (Ceu, Nebulosa, PostCard, PostForm, Legenda, Estados...)
-├── contexts/     estado compartilhado (posts, tema, avisos)
+├── contexts/     estado compartilhado (posts, idioma, tema, avisos)
+├── data/         traduções para português (traducoes-pt.json)
+├── i18n/         textos da interface em português e inglês
 ├── hooks/        lógica reutilizável (filtro na URL, atalhos de teclado, voz, tamanho da tela)
 ├── pages/        uma página por rota
 ├── services/     funções de acesso à API
@@ -102,6 +105,8 @@ src/
 - **Céu em SVG, sem biblioteca:** cada estrela é um elemento focável de verdade, o que resolve teclado e leitor de tela. A câmera é o `viewBox` do SVG, animado com `requestAnimationFrame`.
 - **Céu sempre igual:** as posições vêm de um gerador pseudoaleatório com semente (o id do post). As constelações são distribuídas em espiral (ângulo dourado, como as sementes de um girassol) e depois afastadas até não encostarem.
 - **Nebulosas geradas por código:** cada post ganha uma arte própria em SVG, calculada a partir do id, da tag e das visualizações. Nenhuma imagem externa é baixada.
+- **Dois idiomas sem biblioteca:** os textos da interface ficam em `src/i18n/textos.js` e são lidos com a função `t('chave')` do `LinguaContext`. O conteúdo da API foi traduzido para português e guardado em `src/data/traducoes-pt.json` (199 posts, 339 comentários e 170 tags). Assim a tradução funciona em qualquer navegador, sem depender de serviço externo na hora.
+- **Busca nos dois idiomas:** o telescópio junta o resultado do endpoint `/posts/search` (que procura no texto original, em inglês) com uma busca local no texto traduzido.
 - **Sem bibliotecas de interface:** só React, React Router e CSS próprio.
 
 ## Acessibilidade e uso sem mouse
@@ -117,6 +122,7 @@ src/
 | C | Catálogo |
 | O | Observatório |
 | T | Alterna o tema |
+| L | Alterna português e inglês |
 | E | Edita a estrela aberta |
 | Esc | Fecha, limpa o filtro ou volta ao céu |
 | ? | Mostra a lista de atalhos |
@@ -144,7 +150,8 @@ Além disso:
 - **Todo post novo recebe o mesmo id** (o próximo número depois do último post). Se o usuário criar duas estrelas, a aplicação gera um id novo para a segunda, para não haver duas iguais.
 - **Posts criados aqui não existem na API:** editar ou apagar um deles faz a API responder 404. Nesse caso a alteração é aplicada só no navegador e o aviso explica o que aconteceu.
 - **A busca da API não conhece posts criados ou editados aqui.** Para esses, a busca é feita localmente.
-- **O conteúdo vem em inglês.** A interface é toda em português; os textos dos posts e comentários são exibidos como a API envia (marcados com `lang="en"`, o que também ajuda leitores de tela e a leitura em voz alta).
+- **O conteúdo vem em inglês.** Por isso a aplicação tem o arquivo de traduções. 52 posts são trechos de livros protegidos por direitos autorais e não foram traduzidos: em português eles aparecem no original, com um aviso explicando o motivo. Os trechos de autores em domínio público (como Charles Dickens) foram traduzidos. Cada texto é marcado com o idioma certo (`lang`), o que ajuda leitores de tela e a leitura em voz alta.
+- **Se a API mudar os textos,** a tradução daquele post deixa de bater com o original. Posts criados ou editados aqui aparecem sempre como a pessoa escreveu.
 - A API não tem imagens de posts. As nebulosas são geradas pela própria aplicação.
 
 ## Integrantes

@@ -22,13 +22,7 @@ export function hashTexto(texto) {
   return h >>> 0;
 }
 
-const NOMES = {
-  history: 'História', american: 'Americana', crime: 'Crime', french: 'Francesa',
-  fiction: 'Ficção', english: 'Inglesa', magical: 'Mágica', mystery: 'Mistério',
-  love: 'Amor', classic: 'Clássicos', memories: 'Memórias', nostalgia: 'Nostalgia',
-  life: 'Vida', adventure: 'Aventura', romance: 'Romance', family: 'Família',
-  nature: 'Natureza', city: 'Cidade', village: 'Vilarejo', diversas: 'Diversas',
-};
+
 
 // Matiz (0 a 360) e saturação de cada constelação.
 const MATIZES = {
@@ -38,9 +32,6 @@ const MATIZES = {
   nature: [135, 55], city: [225, 35], village: [28, 60], diversas: [210, 10],
 };
 
-export function nomeTag(tag) {
-  return NOMES[tag] || tag.charAt(0).toUpperCase() + tag.slice(1);
-}
 
 export function matizTag(tag) {
   return MATIZES[tag] || [hashTexto(tag) % 360, 75];
@@ -91,11 +82,10 @@ export function polemica(post) {
 export const ehPolemica = (post) => polemica(post) >= 0.85;
 
 export function minutosLeitura(post) {
-  const palavras = post.body.trim().split(/\s+/).length;
+  const palavras = (post.texto || post.body).trim().split(/\s+/).length;
   return Math.max(1, Math.round(palavras / 200));
 }
 
-export const formatar = (n) => Number(n || 0).toLocaleString('pt-BR');
 
 // Árvore geradora mínima: liga as estrelas de uma constelação usando
 // as linhas mais curtas possíveis, sem formar ciclos.

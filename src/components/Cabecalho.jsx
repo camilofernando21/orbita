@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate, useSearchParams } from 'react-router';
 import { useTema } from '../contexts/TemaContext';
+import { useLingua } from '../contexts/LinguaContext';
 import Icone from './Icone';
 
 export default function Cabecalho({ buscaRef, aoAbrirAjuda }) {
@@ -8,6 +9,7 @@ export default function Cabecalho({ buscaRef, aoAbrirAjuda }) {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const { modo, alternarTema } = useTema();
+  const { lingua, definirLingua, t } = useLingua();
 
   // A busca vale para o céu e para o catálogo. Em outras páginas, buscar leva ao céu.
   const paginaComBusca = location.pathname === '/' || location.pathname === '/catalogo';
@@ -63,11 +65,11 @@ export default function Cabecalho({ buscaRef, aoAbrirAjuda }) {
     alternarTema({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
   }
 
-  const proximoTema = modo === 'dark' ? 'carta celeste (tema claro)' : 'céu noturno (tema escuro)';
+  const rotuloTema = modo === 'dark' ? t('tema.paraClaro') : t('tema.paraEscuro');
 
   return (
     <header className="cabecalho">
-      <Link to="/" className="marca" aria-label="Órbita, página inicial">
+      <Link to="/" className="marca" aria-label={t('app.inicio')}>
         <svg viewBox="0 0 40 40" aria-hidden="true" className="marca-simbolo">
           <circle cx="20" cy="20" r="13" fill="none" stroke="currentColor" strokeOpacity=".45" strokeDasharray="2.5 3.5" />
           <circle cx="20" cy="20" r="5" fill="currentColor" />
@@ -76,14 +78,14 @@ export default function Cabecalho({ buscaRef, aoAbrirAjuda }) {
         <span>Órbita</span>
       </Link>
 
-      <nav className="nav-principal" aria-label="Principal">
-        <NavLink to="/" end>Céu</NavLink>
-        <NavLink to="/catalogo">Catálogo</NavLink>
-        <NavLink to="/observatorio">Observatório</NavLink>
+      <nav className="nav-principal" aria-label={t('nav.principal')}>
+        <NavLink to="/" end>{t('nav.ceu')}</NavLink>
+        <NavLink to="/catalogo">{t('nav.catalogo')}</NavLink>
+        <NavLink to="/observatorio">{t('nav.observatorio')}</NavLink>
       </nav>
 
       <form role="search" className="busca" onSubmit={aoEnviar}>
-        <label htmlFor="campo-busca" className="vh">Telescópio: buscar publicações</label>
+        <label htmlFor="campo-busca" className="vh">{t('busca.rotulo')}</label>
         <Icone nome="lupa" tamanho={18} />
         <input
           id="campo-busca"
@@ -92,7 +94,7 @@ export default function Cabecalho({ buscaRef, aoAbrirAjuda }) {
           value={texto}
           onChange={aoDigitar}
           onKeyDown={aoTeclar}
-          placeholder="Telescópio"
+          placeholder={t('busca.placeholder')}
           autoComplete="off"
           spellCheck="false"
           enterKeyHint="search"
@@ -101,21 +103,25 @@ export default function Cabecalho({ buscaRef, aoAbrirAjuda }) {
       </form>
 
       <div className="acoes-topo">
+        <div className="idiomas" role="group" aria-label={t('idioma.grupo')}>
+          <button type="button" aria-pressed={lingua === 'pt'} onClick={() => definirLingua('pt')} aria-label={t('idioma.pt')} lang="pt-BR">PT</button>
+          <button type="button" aria-pressed={lingua === 'en'} onClick={() => definirLingua('en')} aria-label={t('idioma.en')} lang="en">EN</button>
+        </div>
         <Link to="/nova" className="botao botao-primario" viewTransition>
           <Icone nome="mais" tamanho={18} />
-          <span>Nova estrela</span>
+          <span>{t('acao.nova')}</span>
         </Link>
         <button
           type="button"
           id="botao-tema"
           className="botao-icone"
           onClick={trocarTema}
-          aria-label={`Mudar para ${proximoTema}. Atalho: T`}
-          title={`Mudar para ${proximoTema} (T)`}
+          aria-label={rotuloTema}
+          title={rotuloTema}
         >
           <Icone nome={modo === 'dark' ? 'sol' : 'lua'} />
         </button>
-        <button type="button" className="botao-icone" onClick={aoAbrirAjuda} aria-label="Atalhos de teclado" title="Atalhos de teclado (?)">
+        <button type="button" className="botao-icone so-desktop" onClick={aoAbrirAjuda} aria-label={t('atalhos.botao')} title={t('atalhos.botao')}>
           <Icone nome="teclado" />
         </button>
       </div>

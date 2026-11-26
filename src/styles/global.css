@@ -202,6 +202,14 @@ kbd {
 
 .acoes-topo { display: flex; align-items: center; gap: 8px; justify-self: end; }
 
+.idiomas { display: inline-flex; padding: 3px; gap: 2px; border-radius: 999px; border: 1px solid var(--borda-forte); background: var(--superficie); backdrop-filter: blur(10px); }
+.idiomas button {
+  min-width: 40px; height: 36px; padding: 0 10px; border: 0; border-radius: 999px; background: none;
+  color: var(--suave); font-weight: 700; font-size: 13px; cursor: pointer; transition: background-color .2s, color .2s;
+}
+.idiomas button:hover { color: var(--tinta); }
+.idiomas button[aria-pressed='true'] { background: var(--tinta); color: var(--fundo); }
+
 /* ---------- céu ---------- */
 
 .app-ceu { height: 100dvh; overflow: hidden; }
@@ -392,6 +400,7 @@ kbd {
 
 .detalhe-grade { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 40px; align-items: start; margin-top: 28px; }
 .detalhe-corpo { margin: 0; font-size: 19px; line-height: 1.75; max-width: 66ch; }
+.aviso-traducao { margin: 16px 0 0; padding: 10px 14px; border-left: 3px solid var(--ouro); background: color-mix(in srgb, var(--ouro) 8%, transparent); border-radius: 0 10px 10px 0; color: var(--suave); font-size: 14.5px; max-width: 66ch; }
 .detalhe-acoes { display: flex; flex-wrap: wrap; gap: 10px; margin: 28px 0 44px; }
 .detalhe-lateral { position: sticky; top: 100px; }
 

@@ -1,42 +1,44 @@
+import { useLingua } from '../contexts/LinguaContext';
+
 const ATALHOS = [
-  [['←', '↑', '→', '↓'], 'Pular para a estrela mais próxima naquela direção'],
-  [['Enter'], 'Abrir a estrela selecionada'],
-  [['+', '−'], 'Aproximar e afastar o céu'],
-  [['0'], 'Ver o céu inteiro'],
-  [['/'], 'Abrir o telescópio (busca)'],
-  [['N'], 'Criar uma nova estrela'],
-  [['C'], 'Ir para o catálogo'],
-  [['O'], 'Ir para o observatório'],
-  [['T'], 'Alternar céu noturno e carta celeste'],
-  [['E'], 'Editar a estrela aberta'],
-  [['Esc'], 'Fechar, limpar o filtro ou voltar ao céu'],
-  [['?'], 'Mostrar esta lista'],
+  [['←', '↑', '→', '↓'], 'ajuda.setas'],
+  [['Enter'], 'ajuda.enter'],
+  [['+', '−'], 'ajuda.zoom'],
+  [['0'], 'ajuda.zero'],
+  [['/'], 'ajuda.barra'],
+  [['N'], 'ajuda.n'],
+  [['C'], 'ajuda.c'],
+  [['O'], 'ajuda.o'],
+  [['T'], 'ajuda.t'],
+  [['L'], 'ajuda.l'],
+  [['E'], 'ajuda.e'],
+  [['Esc'], 'ajuda.esc'],
+  [['?'], 'ajuda.interrogacao'],
 ];
 
 export default function AjudaAtalhos({ ref }) {
+  const { t } = useLingua();
   return (
     <dialog ref={ref} className="modal modal-largo" aria-labelledby="titulo-atalhos">
-      <h2 id="titulo-atalhos">Navegue sem mouse</h2>
-      <p className="modal-texto">
-        Tudo na Órbita funciona pelo teclado. A tecla Tab percorre botões, links e estrelas, e o foco fica sempre visível.
-      </p>
+      <h2 id="titulo-atalhos">{t('ajuda.titulo')}</h2>
+      <p className="modal-texto">{t('ajuda.texto')}</p>
       <table className="tabela-atalhos">
-        <caption className="vh">Atalhos de teclado</caption>
+        <caption className="vh">{t('ajuda.legenda')}</caption>
         <thead>
-          <tr><th scope="col">Tecla</th><th scope="col">O que faz</th></tr>
+          <tr><th scope="col">{t('ajuda.tecla')}</th><th scope="col">{t('ajuda.faz')}</th></tr>
         </thead>
         <tbody>
-          {ATALHOS.map(([teclas, acao]) => (
-            <tr key={acao}>
-              <td>{teclas.map((t) => <kbd key={t}>{t}</kbd>)}</td>
-              <td>{acao}</td>
+          {ATALHOS.map(([teclas, chave]) => (
+            <tr key={chave}>
+              <td>{teclas.map((tecla) => <kbd key={tecla}>{tecla}</kbd>)}</td>
+              <td>{t(chave)}</td>
             </tr>
           ))}
         </tbody>
       </table>
       <div className="modal-acoes">
         <button type="button" className="botao botao-primario" onClick={() => ref.current?.close()} autoFocus>
-          Entendi
+          {t('ajuda.entendi')}
         </button>
       </div>
     </dialog>

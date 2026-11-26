@@ -1,9 +1,11 @@
-import { corTag, nomeTag } from '../utils/ceu';
+import { corTag } from '../utils/ceu';
+import { useLingua } from '../contexts/LinguaContext';
 
 // Lista de constelações. Cada botão liga e desliga o filtro daquela constelação.
 export default function Legenda({ constelacoes, ativa, aoEscolher, modo, className = '' }) {
+  const { t, nomeTag } = useLingua();
   return (
-    <nav className={`legenda ${className}`} aria-label="Filtrar por constelação">
+    <nav className={`legenda ${className}`} aria-label={t('legenda.rotulo')}>
       <ul>
         {constelacoes.map((c) => (
           <li key={c.tag}>

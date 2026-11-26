@@ -1,15 +1,23 @@
-import { formatar, polemica } from '../utils/ceu';
+import { polemica } from '../utils/ceu';
+import { useLingua } from '../contexts/LinguaContext';
 
 export default function MedidorPolemica({ post }) {
+  const { t, formatar } = useLingua();
   const { likes = 0, dislikes = 0 } = post.reactions || {};
   const pct = Math.round(polemica(post) * 100);
   const total = likes + dislikes;
   const pctLikes = total ? (likes / total) * 100 : 50;
-  const veredito = !total ? 'Sem reações ainda' : pct >= 85 ? 'Polêmica' : pct >= 50 ? 'Opiniões divididas' : 'Quase consenso';
+  const veredito = !total
+    ? t('medidor.semReacoes')
+    : pct >= 85
+      ? t('medidor.polemica')
+      : pct >= 50
+        ? t('medidor.dividida')
+        : t('medidor.consenso');
 
   return (
     <section className="painel medidor" aria-labelledby="titulo-medidor">
-      <h2 id="titulo-medidor" className="painel-titulo">Índice de polêmica</h2>
+      <h2 id="titulo-medidor" className="painel-titulo">{t('medidor.titulo')}</h2>
       <p className={`medidor-valor${pct >= 50 ? ' medidor-quente' : ''}`}>
         <strong>{pct}%</strong>
         <span>{veredito}</span>
@@ -19,13 +27,11 @@ export default function MedidorPolemica({ post }) {
         <span className="medidor-dislikes" />
       </div>
       <dl className="medidor-numeros">
-        <div><dt>Curtidas</dt><dd>{formatar(likes)}</dd></div>
-        <div><dt>Descurtidas</dt><dd>{formatar(dislikes)}</dd></div>
-        <div><dt>Visualizações</dt><dd>{formatar(post.views)}</dd></div>
+        <div><dt>{t('medidor.curtidas')}</dt><dd>{formatar(likes)}</dd></div>
+        <div><dt>{t('medidor.descurtidas')}</dt><dd>{formatar(dislikes)}</dd></div>
+        <div><dt>{t('medidor.views')}</dt><dd>{formatar(post.views)}</dd></div>
       </dl>
-      <p className="medidor-formula">
-        Calculado como 1 − |curtidas − descurtidas| ÷ total de reações. Quanto mais empatado o placar, mais polêmica a publicação.
-      </p>
+      <p className="medidor-formula">{t('medidor.formula')}</p>
     </section>
   );
 }

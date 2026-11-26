@@ -6,11 +6,13 @@ import { usePosts } from '../contexts/PostsContext';
 import { useTema } from '../contexts/TemaContext';
 import { useAviso } from '../contexts/AvisoContext';
 import { criarPost } from '../services/postsApi';
-import { contarConstelacoes, nomeTag } from '../utils/ceu';
+import { contarConstelacoes } from '../utils/ceu';
+import { useLingua } from '../contexts/LinguaContext';
 
 export default function NovaEstrela() {
   const { posts, status, adicionar } = usePosts();
   const { modo } = useTema();
+  const { t, nomeTag } = useLingua();
   const avisar = useAviso();
   const navigate = useNavigate();
   const constelacoes = useMemo(() => contarConstelacoes(posts), [posts]);
@@ -33,7 +35,7 @@ export default function NovaEstrela() {
       reactions: { likes: 0, dislikes: 0 },
       local: true,
     });
-    avisar(`Uma estrela nasceu em ${nomeTag(dados.tags[0])}. POST /posts/add respondeu com id ${resposta.id}.`);
+    avisar(t('nova.aviso', { nome: nomeTag(dados.tags[0]), id: resposta.id }));
     navigate('/', { state: { nasceu: id }, viewTransition: true });
   }
 
@@ -42,18 +44,16 @@ export default function NovaEstrela() {
   return (
     <div className="pagina pagina-formulario">
       <header className="pagina-cabeca">
-        <p className="sobretitulo">Nova estrela</p>
-        <h1>Escreva uma publicação e veja ela nascer no céu</h1>
-        <p className="pagina-intro">
-          O envio vai para a API com POST. Ela confirma e devolve um id, mas não guarda o post: a estrela existe enquanto esta página estiver aberta.
-        </p>
+        <p className="sobretitulo">{t('nova.sobre')}</p>
+        <h1>{t('nova.titulo')}</h1>
+        <p className="pagina-intro">{t('nova.intro')}</p>
       </header>
       <PostForm
         constelacoes={constelacoes}
         modo={modo}
         aoEnviar={enviar}
-        textoEnviar="Fazer a estrela nascer"
-        textoEnviando="Enviando para a API…"
+        textoEnviar={t('nova.enviar')}
+        textoEnviando={t('nova.enviando')}
         aoCancelar={() => navigate(-1)}
       />
     </div>

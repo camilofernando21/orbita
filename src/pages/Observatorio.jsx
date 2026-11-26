@@ -4,9 +4,11 @@ import Nebulosa from '../components/Nebulosa';
 import { Carregando, EstadoErro } from '../components/Estados';
 import { usePosts } from '../contexts/PostsContext';
 import { useTema } from '../contexts/TemaContext';
-import { contarConstelacoes, corTag, ehPolemica, formatar, nomeTag, polemica } from '../utils/ceu';
+import { contarConstelacoes, corTag, ehPolemica, polemica } from '../utils/ceu';
+import { useLingua } from '../contexts/LinguaContext';
 
 function Ranking({ id, titulo, itens, valor, modo }) {
+  const { nomeTag } = useLingua();
   return (
     <section className="painel ranking" aria-labelledby={id}>
       <h2 id={id} className="painel-titulo">{titulo}</h2>
@@ -16,7 +18,7 @@ function Ranking({ id, titulo, itens, valor, modo }) {
             <span className="ranking-pos" aria-hidden="true">{i + 1}</span>
             <span className="ranking-arte"><Nebulosa post={post} modo={modo} variante="cartao" /></span>
             <span className="ranking-texto">
-              <Link to={`/estrela/${post.id}`} className="link-esticado" viewTransition>{post.title}</Link>
+              <Link to={`/estrela/${post.id}`} className="link-esticado" lang={post.idioma} viewTransition>{post.titulo}</Link>
               <span>{nomeTag(post.constelacao)}</span>
             </span>
             <span className="ranking-valor">{valor(post)}</span>
@@ -30,6 +32,7 @@ function Ranking({ id, titulo, itens, valor, modo }) {
 export default function Observatorio() {
   const { posts, status, erro, recarregar } = usePosts();
   const { modo } = useTema();
+  const { t, nomeTag, formatar } = useLingua();
 
   const dados = useMemo(() => {
     const constelacoes = contarConstelacoes(posts);
@@ -46,7 +49,7 @@ export default function Observatorio() {
     };
   }, [posts]);
 
-  if (status === 'carregando') return <Carregando texto="Calibrando o observatório…" />;
+  if (status === 'carregando') return <Carregando texto={t('obs.carregando')} />;
   if (status === 'erro') return <EstadoErro detalhe={erro?.message} aoTentar={recarregar} />;
 
   const maior = dados.constelacoes[0]?.n || 1;
@@ -54,27 +57,25 @@ export default function Observatorio() {
   return (
     <div className="pagina pagina-observatorio">
       <header className="pagina-cabeca">
-        <p className="sobretitulo">Observatório</p>
-        <h1>O céu em números</h1>
-        <p className="pagina-intro">
-          {formatar(posts.length)} estrelas em {dados.constelacoes.length} constelações. Os números abaixo são calculados a partir dos dados da API, na hora.
-        </p>
+        <p className="sobretitulo">{t('obs.sobre')}</p>
+        <h1>{t('obs.titulo')}</h1>
+        <p className="pagina-intro">{t('obs.intro', { estrelas: formatar(posts.length), constelacoes: dados.constelacoes.length })}</p>
       </header>
 
       <dl className="numeros">
-        <div><dt>Estrelas</dt><dd>{formatar(posts.length)}</dd></div>
-        <div><dt>Visualizações somadas</dt><dd>{formatar(dados.views)}</dd></div>
-        <div><dt>Curtidas somadas</dt><dd>{formatar(dados.likes)}</dd></div>
-        <div><dt>Estrelas polêmicas</dt><dd className="cor-polemica">{formatar(dados.polemicas)}</dd></div>
+        <div><dt>{t('obs.estrelas')}</dt><dd>{formatar(posts.length)}</dd></div>
+        <div><dt>{t('obs.views')}</dt><dd>{formatar(dados.views)}</dd></div>
+        <div><dt>{t('obs.likes')}</dt><dd>{formatar(dados.likes)}</dd></div>
+        <div><dt>{t('obs.polemicas')}</dt><dd className="cor-polemica">{formatar(dados.polemicas)}</dd></div>
       </dl>
 
       <div className="grade-observatorio">
-        <Ranking id="r-vistas" titulo="As mais vistas" itens={dados.maisVistas} valor={(p) => formatar(p.views)} modo={modo} />
-        <Ranking id="r-polemicas" titulo="As mais polêmicas" itens={dados.maisPolemicas} valor={(p) => `${Math.round(polemica(p) * 100)}%`} modo={modo} />
-        <Ranking id="r-curtidas" titulo="As mais curtidas" itens={dados.maisCurtidas} valor={(p) => formatar(p.reactions?.likes)} modo={modo} />
+        <Ranking id="r-vistas" titulo={t('obs.maisVistas')} itens={dados.maisVistas} valor={(p) => formatar(p.views)} modo={modo} />
+        <Ranking id="r-polemicas" titulo={t('obs.maisPolemicas')} itens={dados.maisPolemicas} valor={(p) => `${Math.round(polemica(p) * 100)}%`} modo={modo} />
+        <Ranking id="r-curtidas" titulo={t('obs.maisCurtidas')} itens={dados.maisCurtidas} valor={(p) => formatar(p.reactions?.likes)} modo={modo} />
 
         <section className="painel constelacoes-barras" aria-labelledby="r-constelacoes">
-          <h2 id="r-constelacoes" className="painel-titulo">Tamanho das constelações</h2>
+          <h2 id="r-constelacoes" className="painel-titulo">{t('obs.tamanho')}</h2>
           <ul>
             {dados.constelacoes.map((c) => (
               <li key={c.tag} style={{ '--cor': corTag(c.tag, modo) }}>
